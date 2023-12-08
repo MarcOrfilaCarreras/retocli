@@ -39,7 +39,7 @@ get_cookies() {
     echo "acrsession_cookie = $acrsession_cookie" >> ~/.acepta_el_reto
     echo "acr_session_cookie = $acr_session_cookie" >> ~/.acepta_el_reto
 
-    result=$(curl -L -s 'https://aceptaelreto.com/bin/search.php?search_query=MarcOrfilaCarreras&commit=searchUser' \
+    result=$(curl -L -s "https://aceptaelreto.com/bin/search.php?search_query=$username&commit=searchUser" \
             -H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8' \
             -H 'Accept-Language: es-ES,es;q=0.6' \
             -H 'Connection: keep-alive' \
