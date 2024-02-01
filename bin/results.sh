@@ -33,7 +33,7 @@ get_results() {
             -H 'User-Agent: Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Mobile Safari/537.36' \
             --compressed)
 
-    table=$(echo -e "Num\tTitle\tLanguage\tComment\tResult\tTimestamp\n$(echo "$result" | jq -r '.submission[] | [.problem.num, .problem.title, .language, .comment, .result, .submissionDate] | @tsv' | awk '{print $1"\t"$2"\t"$3"\t"$4"\t"$5"\t"strftime("%Y-%m-%d %H:%M:%S", $6 / 1000)}')" | column -ts $'\t')
+    table=$(echo "$result" | jq -c '.submission[] | {Id: .num, Title: .problem.title, Result: .result, Language: .language, Date: ((.submissionDate / 1000) | strftime("%Y-%m-%d %H:%M:%S"))}' | jtbl)
 
     echo "$table"
     exit 0
@@ -97,7 +97,7 @@ get_last_results_by_id() {
             -H 'User-Agent: Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Mobile Safari/537.36' \
             --compressed)
 
-    table=$(echo -e "Num\tLanguage\tResult\tTimestamp\n$(echo "$result" | jq -r '.submission[] | [.num, .language, .result, .submissionDate] | @tsv' | awk '{print $1"\t"$2"\t"$3"\t"strftime("%Y-%m-%d %H:%M:%S", $4 / 1000)}')" | column -ts $'\t')
+    table=$(echo "$result" | jq -c '.submission[] | {Id: .num, Result: .result, Language: .language, Date: ((.submissionDate / 1000) | strftime("%Y-%m-%d %H:%M:%S"))}' | jtbl)
 
     echo "$table"
     exit 0
