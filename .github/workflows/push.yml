@@ -1,6 +1,13 @@
 name: PUblish Release
 
-on: push
+on:
+  push:
+    branches:
+      - 'master'
+      - 'main'
+    paths-ignore:
+      - '**/README.md'
+      - '**/LICENSE'
 
 permissions:
   contents: write
