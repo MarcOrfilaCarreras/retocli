@@ -7,6 +7,8 @@ profile_help() {
     echo ""
     echo "  -i, --id            Specify the ID of the user."
     echo ""
+    echo "  -u, --username      Specify the username."
+    echo ""
     exit 1
 }
 
@@ -53,14 +55,45 @@ get_profile() {
     echo ""
 }
 
+get_profile_id_by_username() {
+    local username="$1"
+
+    result=$(curl -s -w "%{redirect_url} %{http_code}" "https://aceptaelreto.com/bin/search.php?search_query=$username&commit=searchUser" \
+            -H 'Accept: application/json' \
+            -H 'Accept-Language: es-ES,es;q=0.6' \
+            -H 'Connection: keep-alive' \
+            -H 'User-Agent: Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Mobile Safari/537.36' \
+            --compressed)
+
+    read redirect_url status_code <<<"$result"
+
+    if [ "$status_code" -ne "302" ]; then
+        echo -e "\nIt seems that the redirection didn't work ..."
+        exit 1
+    fi
+
+    id=$(echo "$redirect_url" | grep -oP 'id=\K[^&]+')
+
+    if [ -n "$id" ]; then
+        echo "$id"
+    fi
+}
+
 profile() {
     local id
+    local username
+    local operation="id"
 
     while [[ $# -gt 0 ]]; do
         case "$1" in
             -i | --id)
                     shift
                     id="$1"
+                    ;;
+            -u | --username)
+                    shift
+                    username="$1"
+                    operation="username"
                     ;;
             -h | --help)
                 profile_help
@@ -72,10 +105,25 @@ profile() {
         shift
     done
 
-    if ! [ -n "$id" ]; then
-        config=$(cat ~/.acepta_el_reto)
-        id=$(echo "$config" | grep -w "^id" | cut -d' ' -f3)
+    if [ "$operation" = "id" ]; then
+        if ! [ -n "$id" ]; then
+            config=$(cat ~/.acepta_el_reto)
+            id=$(echo "$config" | grep -w "^id" | cut -d' ' -f3)
+        fi
+
+        get_profile "$id"
+        exit 0
     fi
 
-    get_profile "$id"
+    if [ "$operation" = "username" ]; then
+        id=$(get_profile_id_by_username "$username")
+
+        if [[ "$id" -eq " " ]]; then
+            echo -e "\nThe user does not seem to exist ..."
+            exit 1
+        fi
+
+        get_profile "$id"
+        exit 0
+    fi
 }
